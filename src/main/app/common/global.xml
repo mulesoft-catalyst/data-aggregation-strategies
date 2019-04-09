@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<context:property-placeholder location="api.${mule.env}.properties" />
+
+	<db:mysql-config name="mysqlConfigurationDB1" doc:name="MySQL Configuration"
+		url="jdbc:mysql://${db1.host}:${db1.port}/${db1.database}?user=${db1.user}&amp;password=${db1.password}&amp;useSSL=true" />
+
+	<db:mysql-config name="mysqlConfigurationDB2"
+		url="jdbc:mysql://${db2.host}:${db2.port}/${db2.database}?user=${db2.user}&amp;password=${db2.password}&amp;useSSL=true" doc:name="MySQL Configuration" />
+
+	<http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration" />
+
+</mule>

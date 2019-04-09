@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+
+	<apikit:config name="apiConfig" raml="api.raml" consoleEnabled="false" doc:name="Router" />
+
+	<flow name="api-main">
+		<http:listener config-ref="httpListenerConfig" path="/api/*" doc:name="HTTP" />
+		<apikit:router config-ref="apiConfig" doc:name="APIkit Router" />
+		<exception-strategy ref="apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
+	</flow>
+
+	<flow name="api-console">
+		<http:listener config-ref="httpListenerConfig" path="/console/*" doc:name="HTTP" />
+		<apikit:console config-ref="apiConfig" doc:name="APIkit Console" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/simple:apiConfig">
+		<flow-ref name="same-data-aggregation-flow" doc:name="same-data-aggregation-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/normalization:apiConfig">
+		<flow-ref name="data-normalization-aggregation-flow" doc:name="data-normalization-aggregation-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/join:apiConfig">
+		<flow-ref name="db-join-aggregation-flow" doc:name="db-join-aggregation-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/dynamic:apiConfig">
+		<flow-ref name="db-dynamic-query-aggregation-flow" doc:name="db-dynamic-query-aggregation-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/choice:apiConfig">
+		<flow-ref name="db-choice-query-aggregation-flow" doc:name="db-choice-query-aggregation-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/db-sequential:apiConfig">
+		<flow-ref name="data-lookup-db-sequential-flow" doc:name="data-lookup-db-sequential-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/db-vm-parallel:apiConfig">
+		<flow-ref name="data-lookup-db-vm-parallel-flow" doc:name="data-lookup-db-vm-parallel-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/db-flow-parallel:apiConfig">
+		<flow-ref name="data-lookup-db-flow-parallel-flow" doc:name="data-lookup-db-flow-parallel-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/db-for-each-sequential:apiConfig">
+		<flow-ref name="data-lookup-db-for-each-sequential-flow" doc:name="data-lookup-db-for-each-sequential-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/dw-sequential:apiConfig">
+		<flow-ref name="data-lookup-dw-sequential-flow" doc:name="data-lookup-dw-sequential-flow" />
+	</flow>
+
+	<flow name="get:/orders/aggregate/dw-filter-sequential:apiConfig">
+		<flow-ref name="data-lookup-filter-dw-sequential-flow" doc:name="data-lookup-filter-dw-sequential-flow" />
+	</flow>
+
+	<apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">
+		<apikit:mapping statusCode="404">
+			<apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+			<set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="405">
+			<apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+			<set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="415">
+			<apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+			<set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="406">
+			<apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+			<set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="400">
+			<apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+			<set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
+		</apikit:mapping>
+	</apikit:mapping-exception-strategy>
+</mule>

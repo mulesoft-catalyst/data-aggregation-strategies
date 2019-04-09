@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+	<flow name="data-lookup-filter-dw-sequential-flow">
+		<enricher doc:name="Store DB1 Orders" target="#[flowVars.orders]">
+			<db:select config-ref="mysqlConfigurationDB1" doc:name="Get Orders from Database 1">
+				<db:parameterized-query><![CDATA[SELECT * FROM Orders]]></db:parameterized-query>
+			</db:select>
+		</enricher>
+
+		<dw:transform-message doc:name="Build Dynamic IN Condition (MySQL limitation - Arrays not accepted for parameterized queries) - Order Ids">
+			<dw:input-payload mimeType="application/java" />
+			<dw:set-variable resource="classpath:dataweave/build-dynamic-in-query.dwl" variableName="dynamicQuery" />
+		</dw:transform-message>
+
+		<enricher doc:name="Store DB1 Order Details" target="#[flowVars.orderDetails]">
+			<db:select config-ref="mysqlConfigurationDB1" doc:name="Get Order Details from Database 1 filtered by Order Ids">
+				<db:dynamic-query><![CDATA[#[flowVars.dynamicQuery]]]></db:dynamic-query>
+			</db:select>
+		</enricher>
+
+		<dw:transform-message doc:name="Lookup Order Details and Build Response">
+			<dw:input-payload mimeType="application/java" />
+			<dw:set-payload resource="classpath:dataweave/build-lookup-order-details-dw-response.dwl" />
+		</dw:transform-message>
+	</flow>
+
+</mule>

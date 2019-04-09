@@ -1,0 +1,84 @@
+#%RAML 1.0
+title: Data Aggregation Strategies
+baseUri: http://localhost:8081
+
+/orders:
+  /aggregate:
+    /simple:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+    /normalization:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+    /join:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+    /dynamic:
+      get:
+        queryParameters: 
+          includeDetails: boolean
+          
+        responses: 
+          200:
+            body: 
+              application/json:
+    /choice:
+      get:
+        queryParameters: 
+          includeDetails: boolean
+          
+        responses: 
+          200:
+            body: 
+              application/json:
+                       
+    /dw-sequential:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+    
+    /dw-filter-sequential:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+              
+    /db-sequential:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+              
+    /db-vm-parallel:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+              
+    /db-flow-parallel:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:
+              
+    /db-for-each-sequential:
+      get:
+        responses: 
+          200:
+            body: 
+              application/json:

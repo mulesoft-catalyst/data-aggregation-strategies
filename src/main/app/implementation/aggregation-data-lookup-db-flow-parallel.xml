@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+	<flow name="data-lookup-db-flow-parallel-flow">
+		<enricher target="#[flowVars.orders]" doc:name="Message Enricher">
+			<db:select config-ref="mysqlConfigurationDB1" doc:name="Get Orders from Database 1">
+				<db:parameterized-query><![CDATA[SELECT * FROM Orders]]></db:parameterized-query>
+			</db:select>
+		</enricher>
+		<set-payload value="#[flowVars.orders]" doc:name="Set Payload = Orders" />
+		<enricher target="#[flowVars.orderDetails]" doc:name="Message Enricher">
+			<processor-chain doc:name="Processor Chain">
+				<collection-splitter doc:name="Collection Splitter" />
+				<flow-ref name="order-details-flow-lookup-flow" doc:name="order-details-flow-lookup-flow" />
+				<collection-aggregator failOnTimeout="true" doc:name="Collection Aggregator" />
+			</processor-chain>
+		</enricher>
+		<dw:transform-message doc:name="Build Response">
+			<dw:input-payload mimeType="application/java" />
+			<dw:set-payload resource="classpath:dataweave/build-lookup-details-db-flow-parallel-response.dwl" />
+		</dw:transform-message>
+	</flow>
+
+	<flow name="order-details-flow-lookup-flow">
+		<db:select config-ref="mysqlConfigurationDB1" doc:name="Get Order Details from Database 1">
+			<db:parameterized-query><![CDATA[SELECT * FROM Order_Details WHERE order_id = #[payload.id]]]></db:parameterized-query>
+		</db:select>
+	</flow>
+
+</mule>
